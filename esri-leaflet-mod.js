@@ -1,4 +1,4 @@
-/*! esri-leaflet - v1.0.2 - 2015-12-31
+/*! esri-leaflet - v1.0.0 - 2015-07-10
 *   Copyright (c) 2015 Environmental Systems Research Institute, Inc.
 *   Apache License*/
 (function (factory) {
@@ -17,7 +17,7 @@
   }
 }(function (L) {
 var EsriLeaflet = { //jshint ignore:line
-  VERSION: '1.0.2',
+  VERSION: '1.0.0',
   Layers: {},
   Services: {},
   Controls: {},
@@ -1642,7 +1642,7 @@ EsriLeaflet.Tasks.identifyFeatures = function(params){
     },
     onRemove: function(map){
       // check to make sure the logo hasn't already been removed
-      if(!map._hasEsriLogo && this._logo && this._logo._container){
+      if(this._logo && this._logo._container){
         map.removeControl(this._logo);
         map._hasEsriLogo = false;
       }
@@ -1740,7 +1740,7 @@ EsriLeaflet.Layers.RasterLayer =  L.Class.extend({
     this._update = L.Util.limitExecByInterval(this._update, this.options.updateInterval, this);
 
     if (map.options.crs && map.options.crs.code) {
-      var sr = map.options.crs.code.split(':')[1];
+      var sr = map.options.crs.code.split(':')[1];     
       this.options.bboxSR = sr;
       this.options.imageSR = sr;
     }
@@ -1972,7 +1972,7 @@ EsriLeaflet.Layers.RasterLayer =  L.Class.extend({
 
 EsriLeaflet.Layers.DynamicMapLayer = EsriLeaflet.Layers.RasterLayer.extend({
 
-  options: {
+  options: {  
     updateInterval: 150,
     layers: false,
     layerDefs: false,
@@ -1983,6 +1983,7 @@ EsriLeaflet.Layers.DynamicMapLayer = EsriLeaflet.Layers.RasterLayer.extend({
   },
 
   initialize: function (options) {
+
     options.url = EsriLeaflet.Util.cleanUrl(options.url);
     this._service = new EsriLeaflet.Services.MapService(options);
     this._service.on('authenticationrequired requeststart requestend requesterror requestsuccess', this._propagateEvent, this);
@@ -2067,112 +2068,118 @@ EsriLeaflet.Layers.DynamicMapLayer = EsriLeaflet.Layers.RasterLayer.extend({
     this._lastClick = e.latlng;
   },
 
-  //start mod
+  _buildExportParams: function () {    
+    var bounds = this._map.getBounds();
+    var size = this._map.getSize();
+    var ne = this._map.options.crs.project(bounds._northEast);
+    var sw = this._map.options.crs.project(bounds._southWest);
 
-_buildExportParams: function () {
-  var bounds = this._map.getBounds();
-  var size = this._map.getSize();
-  var ne = this._map.options.crs.project(bounds._northEast);
-  var sw = this._map.options.crs.project(bounds._southWest);
+    //ensure that we don't ask ArcGIS Server for a taller image than we have actual map displaying
+    var top = this._map.latLngToLayerPoint(bounds._northEast);
+    var bottom = this._map.latLngToLayerPoint(bounds._southWest);
 
-  var params = {
-    bbox: [sw.x, sw.y, ne.x, ne.y].join(','),
-    size: size.x + ',' + size.y,
-    dpi: 96,
-    format: this.options.format,
-    transparent: this.options.transparent,
-    bboxSR: this.options.bboxSR,
-    imageSR: this.options.imageSR
-  };
-
-  if(this.options.layers){      
-    if( Object.prototype.toString.call( this.options.layers ) === '[object Array]' ) {       
-       params.layers = 'show:' + this.options.layers.join(',');
-    }else{
-       params.layers = 'show:' + this.options.layers;
-    }      
-  }
-
-  if(this.options.layerDefs){
-    params.layerDefs = JSON.stringify(this.options.layerDefs);
-  }
-
-  if(this.options.timeOptions){
-    params.timeOptions = JSON.stringify(this.options.timeOptions);
-  }
-
-  if(this.options.from && this.options.to){
-    params.time = this.options.from.valueOf() + ',' + this.options.to.valueOf();
-  }
-
-  if(this._service.options.token) {
-    params.token = this._service.options.token;
-  }
-
-
-  var groundResolution = {      
-    "1":78271.5170,
-    "2":39135.7585,
-    "3":19567.8792,
-    "4":9783.9396,
-    "5":4891.9698,
-    "6":2445.9849,
-    "7":1222.9925,
-    "8":611.4962,
-    "9":305.7481,
-    "10":152.8741,
-    "11":76.4370,
-    "12":38.2185,
-    "13":19.1093,
-    "14":9.5546,
-    "15":4.7773,
-    "16":2.3887,
-    "17":1.1943,
-    "18":0.5972,
-    "19":0.2986,
-    "20":0.1493,
-    "21":0.0746,
-    "22":0.0373,
-    "23":0.0187
-  }
-
-  //https://msdn.microsoft.com/en-us/library/bb259689.aspx  
-      
-      
-  
-  var centralMeridian =  null; 
-  var tempbbox = params.bbox.split(','); 
-  var goingEast = false;   
-  
-  if(Math.abs(tempbbox[0]) > 20037507.0671618 || Math.abs(tempbbox[2]) > 20037507.0671618){
-
-    
-    centralMeridian =  this._map.getCenter().lng;
-    if(centralMeridian >= 180) goingEast = true;    
-    if(Math.abs(centralMeridian) > 180){       
-      centralMeridian = 180 - ((Math.abs(centralMeridian) - 180 ));
+    if (top.y > 0 || bottom.y < size.y){
+      size.y = bottom.y - top.y;
     }
-    if(goingEast)centralMeridian = -centralMeridian;
 
-    var zoom = this._map.getZoom()+1;
-    var screenwidth = this._map.getSize().x;
+    var params = {
+      bbox: [sw.x, sw.y, ne.x, ne.y].join(','),
+      size: size.x + ',' + size.y,
+      dpi: 96,
+      format: this.options.format,
+      transparent: this.options.transparent,
+      bboxSR: this.options.bboxSR,
+      imageSR: this.options.imageSR
+    };   
 
-    tempbbox[0] = -(groundResolution[zoom]*screenwidth);
-    tempbbox[2] = (groundResolution[zoom]*screenwidth);
+    if(this.options.dynamicLayers){
+      params.dynamicLayers = this.options.dynamicLayers;
+    }
 
-    params.bbox = tempbbox.join(",");
-  }
-  
-  
-  
+    if(this.options.layers){
+      params.layers = 'show:' + this.options.layers.join(',');
+    }
 
-  params.imageSR = JSON.stringify({"wkt":"PROJCS[\"WGS_1984_Web_Mercator_Auxiliary_Sphere\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Mercator_Auxiliary_Sphere\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\","+centralMeridian+"],PARAMETER[\"Standard_Parallel_1\",0.0],PARAMETER[\"Auxiliary_Sphere_Type\",0.0],UNIT[\"Meter\",1.0]]"});
-  params.bboxSR = JSON.stringify({"wkt":"PROJCS[\"WGS_1984_Web_Mercator_Auxiliary_Sphere\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Mercator_Auxiliary_Sphere\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\","+centralMeridian+"],PARAMETER[\"Standard_Parallel_1\",0.0],PARAMETER[\"Auxiliary_Sphere_Type\",0.0],UNIT[\"Meter\",1.0]]"});
-  
+    if(this.options.layerDefs){
+      params.layerDefs = JSON.stringify(this.options.layerDefs);
+    }
 
-  return params;
-},
-//end mod
+    if(this.options.timeOptions){
+      params.timeOptions = JSON.stringify(this.options.timeOptions);
+    }
+
+    if(this.options.from && this.options.to){
+      params.time = this.options.from.valueOf() + ',' + this.options.to.valueOf();
+    }
+
+    if(this._service.options.token) {
+      params.token = this._service.options.token;
+    }
+
+
+    var groundResolution = {      
+      "1":78271.5170,
+      "2":39135.7585,
+      "3":19567.8792,
+      "4":9783.9396,
+      "5":4891.9698,
+      "6":2445.9849,
+      "7":1222.9925,
+      "8":611.4962,
+      "9":305.7481,
+      "10":152.8741,
+      "11":76.4370,
+      "12":38.2185,
+      "13":19.1093,
+      "14":9.5546,
+      "15":4.7773,
+      "16":2.3887,
+      "17":1.1943,
+      "18":0.5972,
+      "19":0.2986,
+      "20":0.1493,
+      "21":0.0746,
+      "22":0.0373,
+      "23":0.0187
+    }
+
+    //https://msdn.microsoft.com/en-us/library/bb259689.aspx  
+        
+        
+    
+    var centralMeridian =  null; 
+    var tempbbox = params.bbox.split(','); 
+    var goingEast = false;   
+    
+    if(Math.abs(tempbbox[0]) > 20037507.0671618 || Math.abs(tempbbox[2]) > 20037507.0671618){
+
+      
+      centralMeridian =  this._map.getCenter().lng;
+      if(centralMeridian >= 180) goingEast = true;    
+      if(Math.abs(centralMeridian) > 180){       
+        centralMeridian = 180 - ((Math.abs(centralMeridian) - 180 ));
+      }
+      if(goingEast)centralMeridian = -centralMeridian;
+
+      var zoom = this._map.getZoom()+1;
+      var screenwidth = this._map.getSize().x;
+
+      tempbbox[0] = -(groundResolution[zoom]*screenwidth);
+      tempbbox[2] = (groundResolution[zoom]*screenwidth);
+
+      params.bbox = tempbbox.join(",");
+    }
+ 
+ 
+    
+
+    params.imageSR = {"wkt":"PROJCS[\"WGS_1984_Web_Mercator_Auxiliary_Sphere\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Mercator_Auxiliary_Sphere\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\","+centralMeridian+"],PARAMETER[\"Standard_Parallel_1\",0.0],PARAMETER[\"Auxiliary_Sphere_Type\",0.0],UNIT[\"Meter\",1.0]]"};
+    params.bboxSR = {"wkt":"PROJCS[\"WGS_1984_Web_Mercator_Auxiliary_Sphere\",GEOGCS[\"GCS_WGS_1984\",DATUM[\"D_WGS_1984\",SPHEROID[\"WGS_1984\",6378137.0,298.257223563]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Mercator_Auxiliary_Sphere\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Central_Meridian\","+centralMeridian+"],PARAMETER[\"Standard_Parallel_1\",0.0],PARAMETER[\"Auxiliary_Sphere_Type\",0.0],UNIT[\"Meter\",1.0]]"};
+    
+
+   
+    return params;
+  },
 
   _requestExport: function (params, bounds) {
     if(this.options.f === 'json'){
@@ -2315,6 +2322,7 @@ EsriLeaflet.Layers.ImageMapLayer = EsriLeaflet.Layers.RasterLayer.extend({
   },
 
   _buildExportParams: function () {
+
     var bounds = this._map.getBounds();
     var size = this._map.getSize();
     var ne = this._map.options.crs.project(bounds._northEast);
@@ -2470,6 +2478,7 @@ EsriLeaflet.Layers.TiledMapLayer = L.TileLayer.extend({
       this.metadata(function(error, metadata) {
         if(!error) {
           var sr = metadata.spatialReference.latestWkid || metadata.spatialReference.wkid;
+
 
           if (sr === 102100 || sr === 3857) {
             //create the zoom level data
@@ -2976,7 +2985,7 @@ EsriLeaflet.Layers.FeatureGrid = L.Class.extend({
         }
 
         // no error, features
-        if(!error && featureCollection && featureCollection.features.length && !this._removed){
+        if(!error && featureCollection && featureCollection.features.length){
           // schedule adding features until the next animation frame
           EsriLeaflet.Util.requestAnimationFrame(L.Util.bind(function(){
             this._addFeatures(featureCollection.features, coords);
@@ -3447,13 +3456,10 @@ EsriLeaflet.Layers.FeatureLayer = EsriLeaflet.Layers.FeatureManager.extend({
     map.on('zoomstart zoomend', function(e){
       this._zooming = (e.type === 'zoomstart');
     }, this);
-    this._removed = false;
-
     return EsriLeaflet.Layers.FeatureManager.prototype.onAdd.call(this, map);
   },
 
   onRemove: function(map){
-    this._removed = true;
     for (var i in this._layers) {
       map.removeLayer(this._layers[i]);
     }
@@ -3847,6 +3853,4 @@ EsriLeaflet.Controls.logo = function(options){
 
   return EsriLeaflet;
 }));
-
-
-
+//# sourceMappingURL=esri-leaflet-src.js.map
