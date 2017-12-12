@@ -1,0 +1,110 @@
+<html>
+<head>
+<title>test</title>
+
+<script src="https://code.jquery.com/jquery-3.2.1.min.js"
+  integrity="sha256-hwg4gsxgFZhOsEEamdOYGBf13FyQuiTwlAQgxVSNgt4="
+  crossorigin="anonymous"></script>
+<link href='https://fonts.googleapis.com/css?family=Roboto:100' rel='stylesheet' type='text/css'>
+<style>
+	
+
+	body {
+	  align-items: center;
+	  bottom: 0;
+	  background-color: #34495e;
+	  display: flex;
+	  justify-content: center;
+	  left: 0;
+	  position: absolute;
+	  right: 0;
+	  top:0;
+	}
+
+	.block {
+	    display: flex;
+	    flex-direction: column;
+	    margin: 20px;
+	}
+
+
+	.label{
+		color: #1abc9c;
+		font-size: 40px;
+		font-family: 'Roboto Condensed', serif;
+		font-weight: 40;
+		margin-top:10px;
+		margin-bottom: 10px;
+		text-align: center;
+	}
+
+	.display{
+	   color: #ecf0f1;
+	   font-size: 60px;
+	   font-weight: 100;
+	   font-family: 'Roboto', serif;
+	   margin: 10px;
+	   text-align: center;
+
+	}
+</style>  
+
+</head>
+
+<body>
+
+<script type="text/javascript">
+
+$(document).ready(function(){
+ 
+ 	let l = 0;
+ 	let b = 0; 
+ 	let t = 0;
+
+ 	function get1() {
+ 	 return $.get( "https://api.gdax.com/products/LTC-USD/ticker", function( data ) {
+			  l = data.price * 18.87916933;
+			  $('#lll').html(round(l,2) );
+			});
+ 	}
+
+ 	function get2() {
+	 return	$.get( "https://api.gdax.com/products/BTC-USD/ticker", function( data ) {
+			  b = data.price * 0.11772534
+			  $('#bbb').html(round(b,2));
+			});
+	} 
+
+	$.when(get1(), get2()).done(function(a1, a2){	  
+	   t = b + l
+	   $('#ttt').html(round(t,2));
+	});
+	
+
+	function round(value, decimals) {
+	  return Number(Math.round(value+'e'+decimals)+'e-'+decimals);
+	}
+
+});
+
+</script>
+
+
+<div class="block">
+    <p class="display" id="lll"></p>
+    <p class="label">L</p>
+</div>
+<div class="block">
+    <p class="display" id="bbb"></p>
+    <p class="label">B</p>
+</div>
+<div class="block">
+    <p class="display" id="ttt"></p>
+    <p class="label">T</p>
+</div>
+
+
+
+
+</body>
+</html>
