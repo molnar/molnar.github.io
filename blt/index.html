@@ -58,7 +58,8 @@
 $(document).ready(function(){
  
  	let l = 0;
- 	let b = 0; 
+ 	let b = 0;
+ 	let r = 0; 
  	let t = 0;
 
  	function get1() {
@@ -75,8 +76,19 @@ $(document).ready(function(){
 			});
 	} 
 
-	$.when(get1(), get2()).done(function(a1, a2){	  
-	   t = b + l
+	function get3(){
+		
+			 return	$.get( "https://data.ripple.com/v2/exchange_rates/XRP/USD+rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B?live=true", function( data ) {
+			  
+
+			  r = data.rate * 115.942961
+
+			  $('#rrr').html(round(r,2));
+			});
+	}
+
+	$.when(get1(), get2(), get3()).done(function(a1, a2){	  
+	   t = b + l + r;
 	   $('#ttt').html(round(t,2));
 	});
 	
@@ -97,6 +109,11 @@ $(document).ready(function(){
 <div class="block">
     <p class="display" id="lll"></p>
     <p class="label">L</p>
+</div>
+
+<div class="block">
+    <p class="display" id="rrr"></p>
+    <p class="label">R</p>
 </div>
 
 <div class="block">
