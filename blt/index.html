@@ -71,7 +71,7 @@ $(document).ready(function(){
 
  	function get2() {
 	 return	$.get( "https://api.gdax.com/products/BTC-USD/ticker", function( data ) {
-			  b = data.price * 0.11772534
+			  b = data.price * 0.39913211
 			  $('#bbb').html(round(b,2));
 			});
 	} 
@@ -88,7 +88,7 @@ $(document).ready(function(){
 	}
 
 	$.when(get1(), get2(), get3()).done(function(a1, a2){	  
-	   t = b + l + r;
+	   t = b + r;
 	   $('#ttt').html(round(t,2));
 	});
 	
