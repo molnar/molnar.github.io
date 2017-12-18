@@ -64,7 +64,7 @@ $(document).ready(function(){
 
  	function get1() {
  	 return $.get( "https://api.gdax.com/products/LTC-USD/ticker", function( data ) {
-			  l = data.price * 24.08784195;
+			  l = data.price * 24.03135797;
 			  $('#lll').html(round(l,2) );
 			});
  	}
@@ -88,7 +88,7 @@ $(document).ready(function(){
 	}
 
 	$.when(get1(), get2(), get3()).done(function(a1, a2){	  
-	   t = b + r;
+	   t = l + r;
 	   $('#ttt').html(round(t,2));
 	});
 	
