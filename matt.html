@@ -13,19 +13,56 @@
     <script>
       
 
-      
+      var styles = {        
+        'HU': new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'red',
+            width: 1
+          })
+        }),
+        'TS': new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'green',
+            width: 1
+          })
+        }),
+        'TD': new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'blue',
+            width: 1
+          })
+        }),
+        'EX': new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'gray',
+            width: 1
+          })
+        }),
+        'LO': new ol.style.Style({
+          stroke: new ol.style.Stroke({
+            color: 'orange',
+            width: 1
+          })
+        })
+        
+      };
 
-      var geojsonObject = {};
+ 	var styleFunction = function(feature) {
+
+ 			if(feature.getProperties().stormName == "BONNIE")console.log(feature.getProperties())
+         return styles[feature.getProperties().stormClassification]
+      };
 
       var vectorSource = new ol.source.Vector({
         format: new ol.format.GeoJSON(),
-        url: 'mattdata.json'
+        url: 'myjsonfile1.json'
       });
 
  
 
       var vectorLayer = new ol.layer.Vector({
-        source: vectorSource
+        source: vectorSource,
+        style: styleFunction
       });
 
       var map = new ol.Map({
@@ -46,6 +83,17 @@
           zoom: 2
         })
       });
+
+      map.on('singleclick', function(evt) {
+		    var feature = map.forEachFeatureAtPixel(evt.pixel, function(feature, layer) {
+		        //you can add a condition on layer to restrict the listener
+		        return feature;
+		        });
+		    if (feature) {
+		    	alert(feature.getProperties().stormClassification + "  " + feature.getProperties().stormName )
+		        //here you can add you code to display the coordinates or whatever you want to do
+		    }
+		});
     </script>
   </body>
 </html>
