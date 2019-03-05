@@ -28,8 +28,25 @@ div img {
 
 </head>
 <body>
-<div><img src="http://placehold.it/350x150"></div>
+<div><img src="http://molnar.ws/Chasing%20Phoenix%20final-01.png"></div>
+<script type="text/javascript">
+    function random_bg_color() {
+    var x = Math.floor(Math.random() * 256);
+    var y = Math.floor(Math.random() * 256);
+    var z = Math.floor(Math.random() * 256);
+    var bgColor = "rgb(" + x + "," + y + "," + z + ")";
 
+  
+    document.body.style.background = bgColor;
+    }
+    
+    setInterval(function(){ 
+        random_bg_color();
+    }, 3000);
+    
+    
+</script>
+   
 
 </body>
 </html>
