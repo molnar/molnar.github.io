@@ -1,1 +1,28 @@
-hello
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">    
+    <script
+    src="https://code.jquery.com/jquery-3.4.1.min.js"
+    integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous"></script>
+  </head>
+  <body>
+    
+    <!--this is really happening -->
+    <script>
+
+    console.log("Printing query results: ")
+
+    let url = 'https://gis.berkeleycountysc.gov/arcgis/rest/services/custom/mc_address_points/MapServer/0/query?where=ADDRESS+%3D+%27420+SANDY+DR%27&text=&objectIds=&time=&geometry=&geometryType=esriGeometryEnvelope&inSR=&spatialRel=esriSpatialRelIntersects&relationParam=&outFields=*&returnGeometry=false&returnTrueCurves=false&maxAllowableOffset=&geometryPrecision=&outSR=&returnIdsOnly=false&returnCountOnly=false&orderByFields=&groupByFieldsForStatistics=&outStatistics=&returnZ=false&returnM=false&gdbVersion=&returnDistinctValues=false&resultOffset=&resultRecordCount=&f=pjson'
+    let resultData = null;
+
+    $.getJSON(url, function(data){
+       resultData = data.features[0].attributes;
+       console.log(resultData)
+    }).done(function(){
+      alert("check console");
+    })
+    </script>
+  </body>
+</html>
