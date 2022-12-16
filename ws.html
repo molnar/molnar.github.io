@@ -1,0 +1,70 @@
+<html>
+    <head>
+      <meta charset="utf-8" />
+      <title>Display a basemap layer with labels</title>
+      <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+      <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" crossorigin="" />
+      <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js" crossorigin=""></script>
+  
+      <!-- Load Esri Leaflet from CDN -->
+      <script src="https://unpkg.com/esri-leaflet@^3.0.9/dist/esri-leaflet.js"></script>
+  
+      <!-- Load Esri Leaflet Vector from CDN -->
+      <script src="https://unpkg.com/esri-leaflet-vector@4.0.0/dist/esri-leaflet-vector.js" crossorigin=""></script>
+      <style>
+        html,
+        body,
+        #map {
+          padding: 0;
+          margin: 0;
+          height: 100%;
+          width: 100%;
+          font-family: Arial, Helvetica, sans-serif;
+          font-size: 14px;
+          color: #323232;
+        }
+      </style>
+    </head>
+    <body>
+      <div id="map"></div>
+      <script>
+        const apiKey = "AAPK2b935e8bbf564ef581ca3c6fcaa5f2a71ZH84cPqqFvyz3KplFRHP8HyAwJJkh6cnpcQ-qkWh5aiyDQsGJbsXglGx0QM2cPm";
+  
+        const map = L.map("map").setView([36.140518, -80.303732], 19);
+  
+        L.esri.Vector.vectorBasemapLayer("ArcGIS:Imagery", {
+          apikey: apiKey
+        }).addTo(map);
+
+        var parcelLayer = L.esri.featureLayer({
+            url: 'https://services1.arcgis.com/5Yf8nIJWE7cxpd3N/arcgis/rest/services/Parcels_Hosted/FeatureServer/0/',
+            style: (feature) => {
+                return {
+                    color: "white",
+                    fillOpacity: 0
+                };
+            }
+        }).addTo(map);
+
+        var streetLayer = L.esri.featureLayer({
+            url: 'https://services1.arcgis.com/5Yf8nIJWE7cxpd3N/arcgis/rest/services/Streets_Hosted/FeatureServer/0/',
+            style: (feature) => {
+                return {
+                    color: "red"
+                };
+            }
+        }).addTo(map);
+
+        var easementLayer = L.esri.featureLayer({
+            url: 'https://terraweb.co.forsyth.nc.us/arcgis/rest/services/Tax/TPV_Main/MapServer/14/',
+            style: (feature) => {
+                return {                    
+                    fillColor: "grey"
+                };
+            }
+        }).addTo(map);
+        
+
+      </script>
+    </body>
+  </html>
