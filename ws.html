@@ -63,7 +63,23 @@
                 };
             }
         }).addTo(map);
-        
+
+        function showPosition(position) {
+            console.log("c",position)
+          map.setView([position.coords.latitude, position.coords.longitude], 14);
+        }
+
+        function getLocation() {
+            console.log("here")
+          if (navigator.geolocation) {
+              console.log("a")
+              navigator.geolocation.getCurrentPosition(showPosition);
+          } else {
+            console.log("b")
+              alert("Geolocation is not supported by this browser.");
+          }
+        }
+        getLocation();
 
       </script>
     </body>
